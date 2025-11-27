@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mocha + Chai Template</title>
+    <!-- Mocha styles -->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.css'>
+
+    <!-- Testing libraries -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.js'></script>
+    
+    <!-- Initialization -->
+    <script>
+        mocha.setup('bdd');
+        const assert = chai.assert;
+        const expect = chai.expect;
+    </script>
+
+    <!-- JavaScript playground -->
+    <script>
+        // Brute-force implementation:
+        function getListOfPrimes(max) {
+            if (isNaN(max) || max < 2) {
+                return [];
+            }
+
+            if (max === 2) {
+                return [2];
+            }
+
+            const primes = [];
+
+            // Not optimized approach (On^2)
+            nextPrime:
+            for (let i = 2; i <= max; i++) {
+                for (let j = 2; j < i; j++) {
+                    if (i % j === 0) {
+                        continue nextPrime;
+                    }
+                }
+
+                primes.push(i);
+            }
+
+            return primes;
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Test results mount point -->
+    <div id='mocha'></div>
+
+    <!-- Tests + run -->
+    <script>
+        // Link: https://learn.javascript.ru/task/list-primes
+        describe(`The ${getListOfPrimes.name} function - returns a list of prime numbers up to the argument`, function() {
+            it('should return an empty array if argument is less than "2"', function() {
+                expect(getListOfPrimes(1)).to.eql([]);
+            });
+
+            it('should return only one prime number "[2]" if argument is "2"', function() {
+                expect(getListOfPrimes(2)).to.eql([2]);
+            });
+
+            it('should return prime numbers "[2, 3, 5, 7]" if argument is "10"', function() {
+                expect(getListOfPrimes(10)).to.eql([2, 3, 5, 7]);
+            });
+
+            it('should return a list of prime numbers if argument is "50"', function() {
+                expect(getListOfPrimes(50)).to.eql([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47]);
+            });
+
+            it('should return an empty array if argument is not a number', function() {
+                expect(getListOfPrimes("1")).to.eql([]);
+            });
+        });
+
+        mocha.run();
+    </script>
+</body>
+
+</html>
