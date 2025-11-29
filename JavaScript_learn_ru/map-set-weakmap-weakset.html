@@ -25,7 +25,7 @@
 
         function aclean(arr) {
             const map = new Map();
-            
+
             for (const word of arr) {
                 map.set(word.toLowerCase().split('').sort().join(''), word);
             }
