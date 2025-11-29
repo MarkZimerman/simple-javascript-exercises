@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mocha + Chai Template</title>
+    <!-- Mocha styles -->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.css'>
+
+    <!-- Testing libraries -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.js'></script>
+
+    <!-- Initialization -->
+    <script>
+        mocha.setup('bdd');
+        const assert = chai.assert;
+        const expect = chai.expect;
+    </script>
+
+    <!-- JavaScript playground -->
+    <script>
+        function unique(arr) {
+            return Array.from(new Set(arr));
+        }
+
+        function aclean(arr) {
+            const map = new Map();
+            
+            for (const word of arr) {
+                map.set(word.toLowerCase().split('').sort().join(''), word);
+            }
+
+            return Array.from(map.values());
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Test results mount point -->
+    <div id='mocha'></div>
+
+    <!-- Tests + run -->
+    <script>
+        // Link: https://learn.javascript.ru/task/array-unique-map
+        describe(`The ${unique.name} function - return an array with unique items`, function () {
+            it('should return an array with unique items', function () {
+                const values = ['Hare', 'Krishna', 'Hare', 'Krishna', 'Krishna', 'Krishna', 'Hare', 'Hare', ':-O'
+                ];
+
+                expect(unique(values)).to.eql(['Hare', 'Krishna', ':-O']);
+            });
+        });
+
+        // Link: https://learn.javascript.ru/task/filter-anagrams
+        describe(`The ${aclean.name} function - should clean all repeated anagrams`, function () {
+            it('should clean repeated anagrams', function () {
+                const arr = ['nap', 'teachers', 'cheaters', 'PAN', 'ear', 'era', 'hectares'];
+                expect(aclean(arr)).to.eql(['PAN', 'hectares', 'era']);
+            });
+        });
+
+        mocha.run();
+    </script>
+</body>
+
+</html>
