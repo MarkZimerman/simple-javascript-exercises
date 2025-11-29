@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mocha + Chai Template</title>
+    <!-- Mocha styles -->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.css'>
+
+    <!-- Testing libraries -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.js'></script>
+
+    <!-- Initialization -->
+    <script>
+        mocha.setup('bdd');
+        const assert = chai.assert;
+        const expect = chai.expect;
+    </script>
+
+    <!-- JavaScript playground -->
+    <script>
+        function isEmpty(object) {
+            for (const key in object) {
+                return false;
+            }
+
+            return true;
+        }
+
+        const ladder = {
+            step: 0,
+            up() {
+                this.step++;
+                return this;
+            },
+            down() {
+                this.step--;
+                return this;
+            },
+            showStep() {
+                console.log("Step:", this.step);
+                return this;
+            }
+        };
+    </script>
+</head>
+
+<body>
+    <!-- Test results mount point -->
+    <div id='mocha'></div>
+
+    <!-- Tests + run -->
+    <script>
+        // Link: https://learn.javascript.ru/task/is-empty
+        describe(`The ${isEmpty.name} function - checks if object has no properties`, function () {
+            it('should return "true" for empty object', function () {
+                assert.equal(isEmpty({}), true);
+            });
+
+            it('should return "false" for not empty object', function () {
+                assert.equal(isEmpty({ key: 123 }), false);
+            });
+        });
+
+        // Link: https://learn.javascript.ru/task/chain-calls
+        describe(`Object with chained calls`, function () {
+            it('should show step 1 and then 0, step is 0 in the end', function () {
+                ladder.up().up().down().showStep().down().showStep();
+                assert.equal(ladder.step, 0);
+            });
+        });
+
+        mocha.run();
+    </script>
+</body>
+
+</html>

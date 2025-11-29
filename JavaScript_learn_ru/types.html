@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mocha + Chai Template</title>
+    <!-- Mocha styles -->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.css'>
+
+    <!-- Testing libraries -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mocha/3.2.0/mocha.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/chai/3.5.0/chai.js'></script>
+
+    <!-- Initialization -->
+    <script>
+        mocha.setup('bdd');
+        const assert = chai.assert;
+        const expect = chai.expect;
+    </script>
+
+    <!-- JavaScript playground -->
+    <script>
+        function random(min, max) {
+            return min + Math.random() * (max - min);
+        }
+
+        function randomInteger(min, max) {
+            let rand = min + Math.random() * (max + 1 - min);
+            return Math.floor(rand);
+        }
+
+        function truncate(str, maxlength) {
+            return (str.length > maxlength) ?
+                str.slice(0, maxlength - 1) + '…' : str;
+        }
+
+        function findMaxValueIndex(array) {
+            if (array.length < 1) {
+                return 0;
+            }
+
+            let maxValueIndex = [0];
+            for (let i = 1, maxValue = array[0]; i < array.length; i++) {
+                const value = array[i];
+                if (value > maxValue) {
+                    maxValue = value;
+                    maxValueIndex = i;
+                }
+            }
+
+            return maxValueIndex;
+        }
+
+        /**
+         * Computes the maximum sum of a contiguous subarray using Mark’s custom
+         * “center-expansion” approach.
+         *
+         * This algorithm works by:
+         *   1. Finding the index of the maximum element in the array.
+         *   2. Expanding to the left to find the best prefix ending at that index.
+         *   3. Expanding to the right to find the best suffix starting at that index.
+         *   4. Combining both wings into a single subarray sum.
+         *
+         * The method is efficient (O(n)) and produces correct results for many practical 
+         * array configurations. However, it is **not a universal solution** to the
+         * Maximum Subarray Problem: it only considers sub-arrays that contain the chosen
+         * “center” index (the position of the first maximum element). As a result, 
+         * certain valid maximum-sum sub-arrays may be missed.
+         *
+         * Despite this limitation, the implementation demonstrates a creative and 
+         * non-trivial approach to the problem.
+         *
+         * Time Complexity: O(n)
+         * Space Complexity: O(1)
+         *
+         * @param {number[]} array - The input array of numbers.
+         * @returns {number} The maximum subarray sum found through center expansion.
+         *
+         * @author Mark
+         *
+         * @example
+         * getMaxSubSumMark([1, -2, 3, 4, -1]); // 7
+         * @example
+         * getMaxSubSumMark([4, -100, 5, 5, 5]); // 15
+         * @example
+         * // Note: does NOT always produce correct results for all arrays.
+         */
+
+        function getMaxSubMark(array) {
+            if (!Array.isArray(array)) {
+                throw new Error("Provided argument is not an array");
+            }
+
+            // 1. Find max value position;
+            const maxValueIndex = findMaxValueIndex(array);
+            const maxValue = array[maxValueIndex];
+
+            if (maxValue < 0) {
+                return 0;
+            }
+
+            // 2. Go left to find startPos
+            let startIndex = maxValueIndex;
+            let leftWingMaxSum = maxValue;
+
+            if (maxValueIndex > 0) {
+                let leftWingFullSum = maxValue;
+
+                for (let i = maxValueIndex - 1; i >= 0; i--) {
+                    leftWingFullSum = array[i] + leftWingFullSum;
+
+                    if (leftWingFullSum > leftWingMaxSum) {
+                        leftWingMaxSum = leftWingFullSum;
+                        startIndex = i;
+                    }
+                }
+            }
+
+            // 3. Go right to find endPos
+            let endIndex = maxValueIndex;
+            let rightWingMaxSum = maxValue;
+
+            if (maxValueIndex < array.length) {
+                let rightWingFullSum = maxValue;
+
+                for (let i = maxValueIndex + 1; i < array.length; i++) {
+                    rightWingFullSum = array[i] + rightWingFullSum;
+
+                    if (rightWingFullSum > rightWingMaxSum) {
+                        rightWingMaxSum = rightWingFullSum;
+                        endIndex = i;
+                    }
+                }
+            }
+
+            // console.log("Max right wing:", currentRightMax);
+
+            const result = leftWingMaxSum + rightWingMaxSum - maxValue;
+            // console.log(`Sub sum=${result} in: [${startIndex}, ${endIndex}]`);
+            return result;
+        }
+
+        /**
+         * Computes the maximum sum of any contiguous subarray using
+         * a naive nested-loop approach.
+         *
+         * This implementation checks every possible subarray and returns
+         * the largest sum found. It allows an empty subarray, meaning the
+         * result is 0 if all values are negative.
+         *
+         * Time Complexity: O(n²)
+         * Space Complexity: O(1)
+         *
+         * @param {number[]} arr - The input array of numbers.
+         * @returns {number} The maximum subarray sum. Returns 0 if all elements are negative.
+         *
+         * @example
+         * getMaxSubSumBruteforce([1, -2, 3, 4]); // 7
+         * @example
+         * getMaxSubSumBruteforce([-3, -1, -2]); // 0 (empty subarray)
+         */
+        function getMaxSubSumBruteforce(array) {
+            if (!Array.isArray(array)) {
+                throw new Error("Provided argument is not an array");
+            }
+
+            let currentSum = 0;
+            let result = 0;
+            for (let i = 0; i < array.length; i++) {
+                const value = array[i];
+
+                for (let j = i; j < array.length; j++) {
+                    const element = array[j];
+                    currentSum += element;
+
+                    if (currentSum > result) {
+                        result = currentSum;
+                    }
+                }
+
+                currentSum = 0;
+            }
+
+            return result;
+
+        }
+
+        /**
+         * Computes the maximum sum of any contiguous subarray using Kadane’s algorithm.
+         *
+         * This implementation allows an empty subarray, meaning the result is 0
+         * if all values in the input array are negative.
+         *
+         * Time Complexity: O(n)
+         * Space Complexity: O(1)
+         *
+         * @param {number[]} arr - The input array of numbers.
+         * @returns {number} The maximum subarray sum. Returns 0 if all elements are negative.
+         *
+         * @example
+         * getMaxSubSumCorrect([1, -2, 3, 4, -9, 6]); // 7
+         * @example
+         * getMaxSubSumCorrect([-1, -2, -3]); // 0 (empty subarray)
+         */
+        function getMaxSubSumCorrect(array) {
+            let result = 0;
+            let partialSum = 0;
+            for (const item of array) {
+                partialSum += item;
+
+                /*
+                // My solution forgetting about .max()
+                if (partialSum >= result) {
+                    result = partialSum;
+                }
+
+                if (partialSum < result && partialSum < 0) {
+                    partialSum = 0;
+                }
+                */
+
+                result = Math.max(result, partialSum);
+                if (partialSum < 0) {
+                    partialSum = 0;
+                }
+            }
+
+            return result;
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Test results mount point -->
+    <div id='mocha'></div>
+
+    <!-- Tests + run -->
+    <script>
+        // Link: https://learn.javascript.ru/task/random-min-max
+        describe(`The ${random.name} function - returns random number between min and max`, function () {
+            it('should return random number between 1 and 5', function () {
+                expect(random(1, 5)).to.be.within(1, 5);
+            });
+
+            it('should return random number between 1 and 5', function () {
+                expect(random(1, 5)).to.be.within(1, 5);
+            });
+
+            it('should return random number between 1 and 5', function () {
+                expect(random(1, 5)).to.be.within(1, 5);
+            });
+
+            it('should return random number between 1 and 5', function () {
+                expect(random(1, 5)).to.be.within(1, 5);
+            });
+
+            it('should return random number between 1 and 5', function () {
+                expect(random(1, 5)).to.be.within(1, 5);
+            });
+        });
+
+        // Link: https://learn.javascript.ru/task/random-int-min-max
+        describe(`The ${randomInteger.name} function - returns random integer number between min and max (including)`, function () {
+            it('should return random number between 1 and 5', function () {
+                expect(randomInteger(1, 5)).to.be.within(1, 5);
+            });
+
+            it('should return random number between 1 and 5', function () {
+                expect(randomInteger(1, 5)).to.be.within(1, 5);
+            });
+
+            it('should return random number between 1 and 5', function () {
+                expect(randomInteger(1, 5)).to.be.within(1, 5);
+            });
+
+            it('should return random number between 1 and 5', function () {
+                expect(randomInteger(1, 5)).to.be.within(1, 5);
+            });
+
+            it('should return random number between 1 and 5', function () {
+                expect(randomInteger(1, 5)).to.be.within(1, 5);
+            });
+        });
+
+        // Link: https://learn.javascript.ru/task/truncate
+        describe(`The ${truncate.name} function - truncates given string if length is exceeding max value`, function () {
+            it('should truncate long string and add "…" at the end', function () {
+                assert.equal(truncate("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", 20), "Lorem ipsum dolor s…");
+            });
+
+            it('should not truncate short string and not add "…" at the end', function () {
+                assert.equal(truncate("Lorem ipsum.", 20), "Lorem ipsum.");
+            });
+        });
+
+        // Link: https://learn.javascript.ru/task/maximal-subarray
+        describe(`${findMaxValueIndex.name} Function`, function () {
+            it('should return 2 as index of element 3 in array=[-1, 2, 3, -9]', function () {
+                assert.equal(findMaxValueIndex([-1, 2, 3, -9]), 2);
+            });
+
+            it('should return 0 as index of element 3 in array=[3, 2, 1]', function () {
+                assert.equal(findMaxValueIndex([3, 2, 1]), 0);
+            });
+
+            it('should return 2 as index of element 3 in array=[1, 2, 3]', function () {
+                assert.equal(findMaxValueIndex([1, 2, 3]), 2);
+            });
+
+            it('should return 1 as index of element -2 in array=[-10, -2, -3, -9]', function () {
+                assert.equal(findMaxValueIndex([-10, -2, -3, -9]), 1);
+            });
+
+            it('should return 4 as index of element 5 in array=[1, 2, 3, 3, 5, 5, 5, 4, 4]', function () {
+                assert.equal(findMaxValueIndex([1, 2, 3, 3, 5, 5, 5, 4, 4]), 4);
+            });
+
+            it('should return 9 as index of element 7 in array=[1, 2, 3, 3, 5, 5, 5, 4, 4, 7, 1]', function () {
+                assert.equal(findMaxValueIndex([1, 2, 3, 3, 5, 5, 5, 4, 4, 7, 1]), 9);
+            });
+
+            it('should return 0 as index of element 10 in array=[10]', function () {
+                assert.equal(findMaxValueIndex([10]), 0);
+            });
+        });
+
+        describe(`${getMaxSubSumCorrect.name} Function`, function () {
+            it('should return 5 for array=[-1, 2, 3, -9] where subArray index=[1...2]', function () {
+                assert.equal(getMaxSubSumCorrect([-1, 2, 3, -9]), 5);
+            });
+
+            it('should return 6 for array=[2, -1, 2, 3, -9] where subArray index=[0...3]', function () {
+                assert.equal(getMaxSubSumCorrect([2, -1, 2, 3, -9]), 6);
+            });
+
+            it('should return 11 for array=[-1, 2, 3, -9, 11] where subArray index=[4]', function () {
+                assert.equal(getMaxSubSumCorrect([-1, 2, 3, -9, 11]), 11);
+            });
+
+            it('should return 3 for array=[-2, -1, 1, 2] where subArray index=[2...3]', function () {
+                assert.equal(getMaxSubSumCorrect([-2, -1, 1, 2]), 3);
+            });
+
+            it('should return 100 for array=[100, -9, 2, -3, 5], subArray where index is=[0]', function () {
+                assert.equal(getMaxSubSumCorrect([100, -9, 2, -3, 5]), 100);
+            });
+
+            it('should return 6 for array=[1, 2, 3], subArray where index is=[0...2]', function () {
+                assert.equal(getMaxSubSumCorrect([1, 2, 3]), 6);
+            });
+
+            it('should return 0 for array=[-1, -2, -3] and no subArray', function () {
+                assert.equal(getMaxSubSumCorrect([-1, -2, -3]), 0);
+            });
+
+            it('should return 15 for array=[4, -100, 5, 5, 5], subArray where index is=[2...4]', function () {
+                assert.equal(getMaxSubSumCorrect([4, -100, 5, 5, 5]), 15);
+            });
+
+            it('should return 360 for array=[100, -200, 90, 90, 90, 90], subArray where index is=[2...5]', function () {
+                assert.equal(getMaxSubSumCorrect([100, -200, 90, 90, 90, 90]), 360);
+            });
+        });
+
+        describe(`${getMaxSubSumBruteforce.name} Function`, function () {
+            it('should return 5 for array=[-1, 2, 3, -9] where subArray index=[1...2]', function () {
+                assert.equal(getMaxSubSumBruteforce([-1, 2, 3, -9]), 5);
+            });
+
+            it('should return 6 for array=[2, -1, 2, 3, -9] where subArray index=[0...3]', function () {
+                assert.equal(getMaxSubSumBruteforce([2, -1, 2, 3, -9]), 6);
+            });
+
+            it('should return 11 for array=[-1, 2, 3, -9, 11] where subArray index=[4]', function () {
+                assert.equal(getMaxSubSumBruteforce([-1, 2, 3, -9, 11]), 11);
+            });
+
+            it('should return 3 for array=[-2, -1, 1, 2] where subArray index=[2...3]', function () {
+                assert.equal(getMaxSubSumBruteforce([-2, -1, 1, 2]), 3);
+            });
+
+            it('should return 100 for array=[100, -9, 2, -3, 5], subArray where index is=[0]', function () {
+                assert.equal(getMaxSubSumBruteforce([100, -9, 2, -3, 5]), 100);
+            });
+
+            it('should return 6 for array=[1, 2, 3], subArray where index is=[0...2]', function () {
+                assert.equal(getMaxSubSumBruteforce([1, 2, 3]), 6);
+            });
+
+            it('should return 0 for array=[-1, -2, -3] and no subArray', function () {
+                assert.equal(getMaxSubSumBruteforce([-1, -2, -3]), 0);
+            });
+
+            it('should return 15 for array=[4, -100, 5, 5, 5], subArray where index is=[2...4]', function () {
+                assert.equal(getMaxSubSumBruteforce([4, -100, 5, 5, 5]), 15);
+            });
+
+            it('should return 360 for array=[100, -200, 90, 90, 90, 90], subArray where index is=[2...5]', function () {
+                assert.equal(getMaxSubSumBruteforce([100, -200, 90, 90, 90, 90]), 360);
+            });
+        });
+
+        describe(`${getMaxSubMark.name} Function`, function () {
+            it('should return 5 for array=[-1, 2, 3, -9] where subArray index=[1...2]', function () {
+                assert.equal(getMaxSubMark([-1, 2, 3, -9]), 5);
+            });
+
+            it('should return 6 for array=[2, -1, 2, 3, -9] where subArray index=[0...3]', function () {
+                assert.equal(getMaxSubMark([2, -1, 2, 3, -9]), 6);
+            });
+
+            it('should return 11 for array=[-1, 2, 3, -9, 11] where subArray index=[4]', function () {
+                assert.equal(getMaxSubMark([-1, 2, 3, -9, 11]), 11);
+            });
+
+            it('should return 3 for array=[-2, -1, 1, 2] where subArray index=[2...3]', function () {
+                assert.equal(getMaxSubMark([-2, -1, 1, 2]), 3);
+            });
+
+            it('should return 100 for array=[100, -9, 2, -3, 5], subArray where index is=[0]', function () {
+                assert.equal(getMaxSubMark([100, -9, 2, -3, 5]), 100);
+            });
+
+            it('should return 6 for array=[1, 2, 3], subArray where index is=[0...2]', function () {
+                assert.equal(getMaxSubMark([1, 2, 3]), 6);
+            });
+
+            it('should return 0 for array=[-1, -2, -3] and no subArray', function () {
+                assert.equal(getMaxSubMark([-1, -2, -3]), 0);
+            });
+
+            it('should return 15 for array=[4, -100, 5, 5, 5], subArray where index is=[2...4]', function () {
+                assert.equal(getMaxSubMark([4, -100, 5, 5, 5]), 15);
+            });
+
+            it('should return 360 for array=[100, -200, 90, 90, 90, 90], subArray where index is=[2...5]', function () {
+                assert.equal(getMaxSubMark([100, -200, 90, 90, 90, 90]), 360);
+            });
+        });
+
+        mocha.run();
+    </script>
+</body>
+
+</html>
